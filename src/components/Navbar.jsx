@@ -26,7 +26,7 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
           <div className="flex-shrink-0 flex items-center cursor-pointer" onClick={() => scrollTo('hero')}>
-            <img src="/LOGOS/TEXT ONLY.png" alt="I3DION" className="h-8 w-auto" />
+            <img src="/logos/text_only.png" alt="I3DION" className="h-8 w-auto" />
           </div>
           
           <div className="hidden md:flex space-x-8">

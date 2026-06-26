@@ -11,7 +11,7 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-12">
           <div className="flex items-center cursor-pointer group" onClick={() => scrollTo('hero')}>
-            <img src="/LOGOS/LIGHT LOGO.png" alt="I3DION" className="h-8 w-auto opacity-70 group-hover:opacity-100 transition-opacity duration-300" />
+            <img src="/logos/light_logo.png" alt="I3DION" className="h-8 w-auto opacity-70 group-hover:opacity-100 transition-opacity duration-300" />
           </div>
           
           <div className="flex flex-wrap justify-center gap-8">
