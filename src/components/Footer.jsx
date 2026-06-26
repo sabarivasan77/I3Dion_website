@@ -18,7 +18,7 @@ const Footer = () => {
             <button onClick={() => scrollTo('identity')} className="text-gray-400 hover:text-brand-cyan transition-colors text-sm font-medium">Company</button>
             <button onClick={() => scrollTo('product')} className="text-gray-400 hover:text-brand-cyan transition-colors text-sm font-medium">I3DION Spatial</button>
             <button onClick={() => scrollTo('contact')} className="text-gray-400 hover:text-brand-cyan transition-colors text-sm font-medium">Contact</button>
-            <a href="https://www.linkedin.com/company/i3dion/" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-brand-cyan transition-colors text-sm font-medium">LinkedIn</a>
+            <a href="https://www.linkedin.com/company/i3dion1/?utm_source=chatgpt.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-brand-cyan transition-colors text-sm font-medium">LinkedIn</a>
           </div>
         </div>
         

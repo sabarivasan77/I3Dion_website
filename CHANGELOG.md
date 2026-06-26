@@ -20,7 +20,7 @@ All notable changes to this project will be documented in this file.
 - Created `/admin` protected dashboard.
 - Configured GitHub Actions for weekly Selenium testing.
 - Hardened Vercel security headers.
-
+hh
 ## [v1.0.0] - Initial Migration
 - Migrated vanilla HTML/JS site to React + Vite.
 - Implemented Tailwind CSS and Three.js Hero background.

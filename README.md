@@ -119,7 +119,7 @@ This repository implements strict DevSecOps protocols to ensure enterprise-grade
 - **API Protection**: All `api/` routes are serverless functions that do not expose secrets to the client.
 - **Input Validation**: The contact form sanitizes all input before interacting with the database.
 - **Protected Telemetry**: The `/admin` route and `api/reports.js` require Bearer token authentication matching the `ADMIN_PASSWORD` environment variable.
-
+GHH
 ---
 
 ## 🤖 Automation & Testing (DevSecOps)
