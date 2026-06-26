@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 
 const About = () => {
   return (
-    <div className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-screen">
+    <section id="about" className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-screen flex items-center">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -32,7 +32,7 @@ const About = () => {
           </div>
         </div>
       </motion.div>
-    </div>
+    </section>
   );
 };
 

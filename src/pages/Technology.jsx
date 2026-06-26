@@ -13,7 +13,7 @@ const techStack = [
 
 const Technology = () => {
   return (
-    <div className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-screen">
+    <section id="technology" className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-screen flex items-center border-t border-border-subtle">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -40,7 +40,7 @@ const Technology = () => {
           ))}
         </div>
       </motion.div>
-    </div>
+    </section>
   );
 };
 

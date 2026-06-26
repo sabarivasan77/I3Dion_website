@@ -20,6 +20,9 @@
   :root {
     color-scheme: dark;
   }
+  html {
+    scroll-behavior: smooth;
+  }
   body {
     @apply bg-bg-base text-gray-200 font-sans antialiased selection:bg-brand-cyan/30;
     overflow-x: hidden;

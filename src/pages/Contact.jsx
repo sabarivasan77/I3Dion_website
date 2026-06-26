@@ -24,12 +24,30 @@ const Contact = () => {
   };
 
   return (
-    <div className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-screen">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-3xl mx-auto">
-        <h1 className="text-4xl md:text-5xl font-bold mb-6 text-center">Contact I3DION</h1>
+    <section id="contact" className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-screen flex flex-col justify-center border-t border-border-subtle">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-6xl mx-auto w-full">
+        <h2 className="text-4xl md:text-5xl font-bold mb-6 text-center">Contact I3DION</h2>
         <p className="text-center text-gray-400 mb-12">Reach out to our technology integration officers for enterprise solutions and consulting.</p>
 
-        {status === 'success' ? (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+          
+          <div className="lg:col-span-1 space-y-8">
+            <div className="glass-card p-6">
+              <h3 className="text-lg font-bold text-white mb-2">Email</h3>
+              <a href="mailto:i3diontech@gmail.com" className="text-brand-cyan hover:text-brand-cyan/80 transition-colors">i3diontech@gmail.com</a>
+            </div>
+            <div className="glass-card p-6">
+              <h3 className="text-lg font-bold text-white mb-2">Phone & WhatsApp</h3>
+              <p className="text-gray-300">+91 9080701426</p>
+            </div>
+            <div className="glass-card p-6">
+              <h3 className="text-lg font-bold text-white mb-2">Location</h3>
+              <p className="text-gray-300">Remote – Coimbatore, India</p>
+            </div>
+          </div>
+
+          <div className="lg:col-span-2">
+            {status === 'success' ? (
           <div className="glass-card p-12 text-center border-brand-cyan">
             <h2 className="text-3xl font-bold text-brand-cyan mb-4">Transmission Successful</h2>
             <p className="text-gray-300">Your enquiry has been securely logged in our system. A confirmation email has been sent to your address.</p>
@@ -74,10 +92,12 @@ const Contact = () => {
             <button type="submit" disabled={status === 'submitting'} className="w-full py-4 rounded-lg bg-brand-indigo hover:bg-brand-indigo/90 text-white font-bold transition-all disabled:opacity-50">
               {status === 'submitting' ? 'Transmitting...' : 'Submit Enquiry'}
             </button>
-          </form>
-        )}
+            </form>
+          )}
+          </div>
+        </div>
       </motion.div>
-    </div>
+    </section>
   );
 };
 
