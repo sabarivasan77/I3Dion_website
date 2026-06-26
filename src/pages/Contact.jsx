@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 
 const Contact = () => {
-  const [formData, setFormData] = useState({ name: '', email: '', message: '' });
+  const [formData, setFormData] = useState({ name: '', company: '', email: '', phone: '', subject: '', message: '' });
   const [status, setStatus] = useState('idle');
 
   const handleSubmit = async (e) => {
@@ -16,7 +16,7 @@ const Contact = () => {
       });
       if (response.ok) {
         setStatus('success');
-        setFormData({ name: '', email: '', message: '' });
+        setFormData({ name: '', company: '', email: '', phone: '', subject: '', message: '' });
       } else {
         setStatus('error');
       }
@@ -72,9 +72,21 @@ const Contact = () => {
                     <input required type="text" className="w-full bg-bg-base border border-border-subtle rounded-lg px-4 py-3 text-white focus:outline-none focus:border-brand-cyan transition-colors" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
                   </div>
                   <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-2">Company Name</label>
+                    <input required type="text" className="w-full bg-bg-base border border-border-subtle rounded-lg px-4 py-3 text-white focus:outline-none focus:border-brand-cyan transition-colors" value={formData.company} onChange={e => setFormData({...formData, company: e.target.value})} />
+                  </div>
+                  <div>
                     <label className="block text-sm font-medium text-gray-400 mb-2">Email Address</label>
                     <input required type="email" className="w-full bg-bg-base border border-border-subtle rounded-lg px-4 py-3 text-white focus:outline-none focus:border-brand-cyan transition-colors" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
                   </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-2">Phone Number</label>
+                    <input type="tel" className="w-full bg-bg-base border border-border-subtle rounded-lg px-4 py-3 text-white focus:outline-none focus:border-brand-cyan transition-colors" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-2">Subject</label>
+                  <input required type="text" className="w-full bg-bg-base border border-border-subtle rounded-lg px-4 py-3 text-white focus:outline-none focus:border-brand-cyan transition-colors" value={formData.subject} onChange={e => setFormData({...formData, subject: e.target.value})} />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-400 mb-2">Message</label>
