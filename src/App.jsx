@@ -2,11 +2,12 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Hero from './pages/Hero';
+import CompanyIdentity from './pages/CompanyIdentity';
 import About from './pages/About';
+import WhyChoose from './pages/WhyChoose';
+import Services from './pages/Services';
 import Product from './pages/Product';
-import Technology from './pages/Technology';
-import Features from './pages/Features';
-import Roadmap from './pages/Roadmap';
+import CompanyRoadmap from './pages/CompanyRoadmap';
 import Contact from './pages/Contact';
 import Dashboard from './pages/Dashboard';
 
@@ -16,11 +17,12 @@ const SinglePageLayout = () => {
       <Navbar />
       <main className="flex-grow">
         <Hero />
+        <CompanyIdentity />
         <About />
+        <WhyChoose />
+        <Services />
         <Product />
-        <Technology />
-        <Features />
-        <Roadmap />
+        <CompanyRoadmap />
         <Contact />
       </main>
       <Footer />
