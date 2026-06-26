@@ -12,13 +12,16 @@
   "dependencies": {
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.6.1",
+    "axios": "^1.18.1",
     "framer-motion": "^12.42.0",
     "lucide-react": "^1.21.0",
     "mongoose": "^9.7.2",
     "nodemailer": "^9.0.1",
+    "pdfkit": "^0.19.1",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-router-dom": "^7.18.0",
+    "selenium-webdriver": "^4.45.0",
     "three": "^0.185.0"
   },
   "devDependencies": {

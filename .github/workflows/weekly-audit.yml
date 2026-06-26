@@ -1,0 +1,32 @@
+name: Weekly Security & Health Audit
+
+on:
+  schedule:
+    - cron: '0 2 * * 0' # Every Sunday at 02:00 AM
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install Dependencies
+      run: npm ci
+
+    - name: Setup Chrome & ChromeDriver
+      uses: browser-actions/setup-chrome@v1
+    
+    - name: Run Selenium DevSecOps Audit
+      env:
+        MONGODB_URI: ${{ secrets.MONGODB_URI }}
+        EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
+        TARGET_URL: 'https://i3dionofficialwebsite.vercel.app'
+      run: node automation/audit.js
