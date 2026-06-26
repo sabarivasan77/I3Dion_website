@@ -6,25 +6,15 @@ const MONGODB_URI = process.env.MONGODB_URI;
 
 // Global caching for the mongoose connection in serverless environments
 let cached = global.mongoose;
-
 if (!cached) {
   cached = global.mongoose = { conn: null, promise: null };
 }
 
 async function dbConnect() {
   if (!MONGODB_URI) return null;
-  
-  if (cached.conn) {
-    return cached.conn;
-  }
-  
+  if (cached.conn) return cached.conn;
   if (!cached.promise) {
-    const opts = {
-      bufferCommands: false,
-    };
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
-      return mongoose;
-    });
+    cached.promise = mongoose.connect(MONGODB_URI, { bufferCommands: false }).then(m => m);
   }
   try {
     cached.conn = await cached.promise;
@@ -35,87 +25,75 @@ async function dbConnect() {
   return cached.conn;
 }
 
-// Define the Contact Schema
 const contactSchema = new mongoose.Schema({
   name: { type: String, required: true },
   company: { type: String, required: true },
   email: { type: String, required: true },
+  phone: { type: String },
+  subject: { type: String, required: true },
   message: { type: String, required: true },
+  status: { type: String, default: 'New' },
+  source: { type: String, default: 'Website Contact Form' },
   createdAt: { type: Date, default: Date.now },
 });
 
-// Avoid OverwriteModelError in hot-reloading serverless environment
 const Contact = mongoose.models.Contact || mongoose.model('Contact', contactSchema);
 
 module.exports = async function (req, res) {
-  // Add CORS headers for testing
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-  );
+  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
 
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
-
-  if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method Not Allowed' });
-  }
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ message: 'Method Not Allowed' });
 
   try {
-    const { name, company, email, message } = req.body;
-
-    if (!name || !company || !email || !message) {
+    const { name, company, email, phone, subject, message } = req.body;
+    if (!name || !company || !email || !subject || !message) {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
     if (MONGODB_URI) {
-      // Connect to the database
       await dbConnect();
-
-      // Create a new contact entry
-      const newContact = new Contact({
-        name,
-        company,
-        email,
-        message,
-      });
-
+      const newContact = new Contact({ name, company, email, phone, subject, message });
       await newContact.save();
-    } else {
-      // If no DB is configured, we simulate a successful transmission
-      console.log('No MONGODB_URI configured. Received form data:', { name, company, email, message });
     }
 
-    // Set up Nodemailer transporter
+    // Google Sheets Integration Placeholder
+    if (process.env.GOOGLE_SHEETS_ENDPOINT) {
+      try {
+        await fetch(process.env.GOOGLE_SHEETS_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, company, email, phone, subject, message, date: new Date().toISOString() })
+        });
+      } catch (sheetErr) {
+        console.error('Google Sheets Sync Error:', sheetErr);
+      }
+    }
+
     const transporter = nodemailer.createTransport({
       service: 'gmail',
-      auth: {
-        user: 'i3diontech@gmail.com',
-        pass: process.env.EMAIL_PASS
-      }
+      auth: { user: 'i3diontech@gmail.com', pass: process.env.EMAIL_PASS }
     });
 
-    // Admin Notification Email
     const adminMailOptions = {
       from: '"I3Dion Website" <i3diontech@gmail.com>',
       to: 'i3diontech@gmail.com',
-      subject: `New Project Enquiry from ${name} at ${company}`,
+      subject: `New Project Enquiry: ${subject} (${company})`,
       html: `
         <h2>New Contact Form Submission</h2>
         <p><strong>Name:</strong> ${name}</p>
         <p><strong>Company:</strong> ${company}</p>
         <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Phone:</strong> ${phone || 'Not provided'}</p>
+        <p><strong>Subject:</strong> ${subject}</p>
         <p><strong>Message:</strong></p>
         <p>${message}</p>
       `
     };
 
-    // Visitor Auto-Reply Email
     const visitorMailOptions = {
       from: '"I3Dion Tech" <i3diontech@gmail.com>',
       to: email,
@@ -130,22 +108,13 @@ module.exports = async function (req, res) {
       `
     };
 
-    // Send emails concurrently if credentials exist
     if (process.env.EMAIL_PASS) {
-      try {
-        await Promise.all([
-          transporter.sendMail(adminMailOptions),
-          transporter.sendMail(visitorMailOptions)
-        ]);
-        console.log('Emails sent successfully.');
-      } catch (emailError) {
-        console.error('Error sending emails:', emailError);
-      }
-    } else {
-      console.log('EMAIL_PASS not configured. Emails were not sent.');
+      await Promise.all([
+        transporter.sendMail(adminMailOptions),
+        transporter.sendMail(visitorMailOptions)
+      ]);
     }
 
-    // Send successful response
     return res.status(200).json({ message: 'Transmission Successful', success: true });
   } catch (error) {
     console.error('API Error:', error);
