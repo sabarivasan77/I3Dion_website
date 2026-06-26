@@ -4,24 +4,34 @@ import { motion } from 'framer-motion';
 const Contact = () => {
   const [formData, setFormData] = useState({ name: '', company: '', email: '', phone: '', subject: '', message: '' });
   const [status, setStatus] = useState('idle');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus('submitting');
+    setErrorMessage('');
+    
     try {
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
+      
+      const data = await response.json().catch(() => null);
+
       if (response.ok) {
         setStatus('success');
         setFormData({ name: '', company: '', email: '', phone: '', subject: '', message: '' });
       } else {
         setStatus('error');
+        setErrorMessage(data?.message || 'Transmission failed due to a network or server error.');
+        console.error('Contact Form Error:', data || response.statusText);
       }
-    } catch {
+    } catch (error) {
       setStatus('error');
+      setErrorMessage('A network error occurred. Please verify your connection or try again later.');
+      console.error('Contact Form Fetch Error:', error);
     }
   };
 
@@ -92,9 +102,14 @@ const Contact = () => {
                   <label className="block text-sm font-medium text-gray-400 mb-2">Message</label>
                   <textarea required rows="4" className="w-full bg-bg-base border border-border-subtle rounded-lg px-4 py-3 text-white focus:outline-none focus:border-brand-cyan transition-colors" value={formData.message} onChange={e => setFormData({...formData, message: e.target.value})}></textarea>
                 </div>
+                
                 {status === 'error' && (
-                  <p className="text-red-400 text-sm font-medium">Transmission failed. Please check your connection and try again.</p>
+                  <div className="p-4 bg-red-900/20 border border-red-500/30 rounded-lg">
+                    <p className="text-red-400 text-sm font-medium">{errorMessage}</p>
+                    <p className="text-red-500/70 text-xs mt-1">If this persists locally, ensure the Vercel backend proxy is running.</p>
+                  </div>
                 )}
+                
                 <button type="submit" disabled={status === 'submitting'} className="w-full py-4 rounded-lg bg-brand-indigo hover:bg-brand-indigo/90 text-white font-bold transition-all disabled:opacity-50">
                   {status === 'submitting' ? 'Transmitting...' : 'Submit Enquiry'}
                 </button>

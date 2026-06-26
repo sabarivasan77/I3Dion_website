@@ -1,25 +1,31 @@
 const mongoose = require('mongoose');
 const nodemailer = require('nodemailer');
 
-// Connect to MongoDB using environment variables
 const MONGODB_URI = process.env.MONGODB_URI;
 
-// Global caching for the mongoose connection in serverless environments
 let cached = global.mongoose;
 if (!cached) {
   cached = global.mongoose = { conn: null, promise: null };
 }
 
 async function dbConnect() {
-  if (!MONGODB_URI) return null;
+  if (!MONGODB_URI) {
+    console.warn('[DB] MONGODB_URI is not defined. Skipping database connection.');
+    return null;
+  }
   if (cached.conn) return cached.conn;
   if (!cached.promise) {
-    cached.promise = mongoose.connect(MONGODB_URI, { bufferCommands: false }).then(m => m);
+    console.log('[DB] Connecting to MongoDB...');
+    cached.promise = mongoose.connect(MONGODB_URI, { bufferCommands: false }).then(m => {
+      console.log('[DB] Successfully connected to MongoDB.');
+      return m;
+    });
   }
   try {
     cached.conn = await cached.promise;
   } catch (e) {
     cached.promise = null;
+    console.error('[DB] MongoDB Connection Error:', e);
     throw e;
   }
   return cached.conn;
@@ -46,31 +52,46 @@ module.exports = async function (req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).json({ message: 'Method Not Allowed' });
+  
+  if (req.method !== 'POST') {
+    console.warn(`[API] Invalid method called: ${req.method}`);
+    return res.status(405).json({ message: 'Method Not Allowed' });
+  }
+
+  console.log('[API] New contact form submission received.');
 
   try {
     const { name, company, email, phone, subject, message } = req.body;
+    
+    // 1. Validate Input
     if (!name || !company || !email || !subject || !message) {
-      return res.status(400).json({ message: 'Missing required fields' });
+      console.warn('[API] Validation failed: Missing required fields.');
+      return res.status(400).json({ message: 'Missing required fields: name, company, email, subject, or message.' });
     }
 
+    // 2. Save Lead to Database
     if (MONGODB_URI) {
-      await dbConnect();
-      const newContact = new Contact({ name, company, email, phone, subject, message });
-      await newContact.save();
+      try {
+        await dbConnect();
+        const newContact = new Contact({ name, company, email, phone, subject, message });
+        await newContact.save();
+        console.log(`[DB] Successfully saved lead from ${email}.`);
+      } catch (dbError) {
+        console.error('[DB] Failed to save lead:', dbError);
+        // Continue execution so user still receives email even if DB fails
+      }
+    } else {
+      console.warn('[DB] Skipping DB save due to missing MONGODB_URI.');
     }
 
-    // Google Sheets Integration Placeholder
-    if (process.env.GOOGLE_SHEETS_ENDPOINT) {
-      try {
-        await fetch(process.env.GOOGLE_SHEETS_ENDPOINT, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, company, email, phone, subject, message, date: new Date().toISOString() })
-        });
-      } catch (sheetErr) {
-        console.error('Google Sheets Sync Error:', sheetErr);
-      }
+    // 3. Configure Email Transport
+    if (!process.env.EMAIL_PASS) {
+      console.warn('[SMTP] EMAIL_PASS is not defined. Email notifications will not be sent.');
+      return res.status(200).json({ 
+        message: 'Transmission Successful (Dry Run - No SMTP/DB config)', 
+        success: true, 
+        warning: 'Backend executed successfully, but missing environment credentials prevented email dispatch.'
+      });
     }
 
     const transporter = nodemailer.createTransport({
@@ -79,7 +100,7 @@ module.exports = async function (req, res) {
     });
 
     const adminMailOptions = {
-      from: '"I3Dion Website" <i3diontech@gmail.com>',
+      from: '"I3DION Website" <i3diontech@gmail.com>',
       to: 'i3diontech@gmail.com',
       subject: `New Project Enquiry: ${subject} (${company})`,
       html: `
@@ -95,29 +116,41 @@ module.exports = async function (req, res) {
     };
 
     const visitorMailOptions = {
-      from: '"I3Dion Tech" <i3diontech@gmail.com>',
+      from: '"I3DION Tech" <i3diontech@gmail.com>',
       to: email,
-      subject: 'Thank you for your enquiry - I3Dion',
+      subject: 'Thank you for your enquiry - I3DION',
       html: `
-        <h2>Thank You, ${name}!</h2>
-        <p>We have successfully received your enquiry regarding your project at ${company}.</p>
-        <p>Our technology integration officers are reviewing your request and will get back to you shortly.</p>
-        <br>
-        <p>Best Regards,</p>
-        <p><strong>The I3Dion Team</strong></p>
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+          <h2 style="color: #00f0ff;">Thank You, ${name}!</h2>
+          <p>We have successfully received your enquiry regarding your project at <strong>${company}</strong>.</p>
+          <p>Our technology integration officers are reviewing your request and will get back to you shortly.</p>
+          <br>
+          <p>Best Regards,</p>
+          <p><strong>The I3DION Team</strong></p>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+          <p style="font-size: 12px; color: #888;">This is an automated message. Please do not reply directly to this email.</p>
+        </div>
       `
     };
 
-    if (process.env.EMAIL_PASS) {
+    // 4. Send Emails
+    try {
       await Promise.all([
         transporter.sendMail(adminMailOptions),
         transporter.sendMail(visitorMailOptions)
       ]);
+      console.log(`[SMTP] Successfully sent emails for lead ${email}.`);
+    } catch (emailError) {
+      console.error('[SMTP] Failed to send emails:', emailError);
+      return res.status(500).json({ message: 'Failed to dispatch email notifications. Please verify SMTP credentials.' });
     }
 
+    // 5. Return Success Response
+    console.log('[API] Workflow completed successfully.');
     return res.status(200).json({ message: 'Transmission Successful', success: true });
+
   } catch (error) {
-    console.error('API Error:', error);
+    console.error('[API] Critical Server Error:', error);
     return res.status(500).json({ message: 'Internal Server Error', error: error.message });
   }
 };
