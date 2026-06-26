@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const nodemailer = require('nodemailer');
+import mongoose from 'mongoose';
+import nodemailer from 'nodemailer';
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
@@ -45,7 +45,7 @@ const contactSchema = new mongoose.Schema({
 
 const Contact = mongoose.models.Contact || mongoose.model('Contact', contactSchema);
 
-module.exports = async function (req, res) {
+export default async function (req, res) {
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
@@ -78,7 +78,6 @@ module.exports = async function (req, res) {
         console.log(`[DB] Successfully saved lead from ${email}.`);
       } catch (dbError) {
         console.error('[DB] Failed to save lead:', dbError);
-        // Continue execution so user still receives email even if DB fails
       }
     } else {
       console.warn('[DB] Skipping DB save due to missing MONGODB_URI.');
@@ -153,4 +152,4 @@ module.exports = async function (req, res) {
     console.error('[API] Critical Server Error:', error);
     return res.status(500).json({ message: 'Internal Server Error', error: error.message });
   }
-};
+}
